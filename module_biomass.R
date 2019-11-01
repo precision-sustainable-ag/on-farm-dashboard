@@ -34,7 +34,7 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
       map(
         df %>% filter(is.na(mean_fresh)) %>% pull(missing) %>% unique(), 
         ~tags$li(HTML(.x))
-      ) 
+      )
     
     
     
@@ -88,15 +88,14 @@ dry_pseudomodule <- function(biomass_df, field_codes, lastname) {
     )
   
   summaries <- map(df %>% pull(report), ~tags$p(HTML(.x))) 
-  
-  #if (length(summaries)) {
+
   div(
     h2(tags$strong("Dry matter summary")), 
     summaries, 
     tags$hr(), 
     tags$br()
   ) 
-  #}
+
 }
 
 

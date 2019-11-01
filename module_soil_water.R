@@ -1,28 +1,33 @@
 # generate box elements
 water_boxer <- function(input, output, session, inputcode, data) {
 
-  d1 <- data %>% filter(code == inputcode) 
+  data_at_inputcode <- data %>% filter(code == inputcode) 
   pal <- scales::hue_pal(h.start = 30, l = 60)(3)[1:2]
   
-  output$showWaterBox <- reactive(nrow(d1))
+  output$showWaterBox <- reactive(nrow(data_at_inputcode))
   outputOptions(output, "showWaterBox", suspendWhenHidden = FALSE)
   
   output$surplus <- renderPlot({
     
-    d2 <- d1 %>%  
+    data_wide <- data_at_inputcode %>%  
       select(-vwc) %>% 
       spread(key = trt, value = inches) %>%  
       mutate(surplus = gracefully(c-b)) %>% 
       filter(!is.na(surplus))
     
-    rng_max <- max(abs(range(d2$surplus, na.rm = T)))
+    rng_max <- max(abs(range(data_wide$surplus, na.rm = T)))
     
-    if (!is.finite(rng_max) | nrow(d1) == 0 | nrow(d2) == 0 | length(unique(d1$trt)) != 2) {
+    if (
+      !is.finite(rng_max) | 
+      nrow(data_at_inputcode) == 0 | 
+      nrow(data_wide) == 0 | 
+      length(unique(data_at_inputcode$trt)) != 2
+      ) {
       output$errsurplus <- renderText("Some data is missing. Check back soon.")
       return(NULL)
     }
     
-    d2 %>% 
+    data_wide %>% 
       ggplot(aes(d, surplus)) + 
       geom_col(aes(fill = factor(surplus>=0)), show.legend = F) +
       scale_y_continuous(
@@ -39,15 +44,15 @@ water_boxer <- function(input, output, session, inputcode, data) {
   })
   
   output$fieldcap <- renderPlot({
-    if (nrow(d1) == 0) {
+    if (nrow(data_at_inputcode) == 0) {
       output$errfieldcap <- renderText("Some data is missing. Check back soon.")
       return(NULL)
     } 
     
-    d1 %>% group_by(code, trt) %>% 
-      mutate(dnum = row_number(-as.numeric(d))) %>% 
+    data_at_inputcode %>% group_by(code, trt) %>% 
+      mutate(count_days_backwards = row_number(-as.numeric(d))) %>% 
       ungroup() %>% 
-      #filter(dnum < 7) %>% 
+      #filter(count_days_backwards < 7) %>% 
       group_by(code, trt) %>% 
       summarise(pctoffc = mean(inches, na.rm = T)/(3.5*3.28)) %>% 
       ggplot(aes(0, pctoffc, fill = trt)) + 
@@ -61,9 +66,11 @@ water_boxer <- function(input, output, session, inputcode, data) {
       scale_x_continuous(NULL, breaks = NULL) +
       scale_fill_manual(values = set_names(pal, c("b", "c"))) +
       theme_minimal() +
-      theme(axis.text = element_text(size = rel(1.2)),
-            axis.title = element_text(size = rel(1.2)),
-            axis.text.y = element_blank()) +
+      theme(
+        axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        axis.text.y = element_blank()
+        ) +
       coord_flip()
     
   })
@@ -73,7 +80,7 @@ water_boxer <- function(input, output, session, inputcode, data) {
   })
   
   output$watertext <- renderUI({
-    if (nrow(d1) == 0) return(NULL)
+    if (nrow(data_at_inputcode) == 0) return(NULL)
     
     div(
       "In both these graphs", 
@@ -123,4 +130,3 @@ water_boxerUI <- function(id) {
   )
   
 }
-

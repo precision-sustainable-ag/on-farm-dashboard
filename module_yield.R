@@ -1,20 +1,20 @@
 yield_boxer <- function(input, output, session, inputcode, data) {
 
-  d0 <- data %>% 
+  data_at_inputcode <- data %>% 
     filter(code == inputcode, !is.na(bu_ac), !is.na(treatment)) 
   
-  d1 <- d0 %>% 
+  data_summarized <- data_at_inputcode %>% 
     group_by(treatment, N) %>% 
     summarize(
       mean_bu_ac = mean(bu_ac),
       sd_bu_ac = sd(bu_ac)
       )
   
-  bare <- signif(d1 %>% filter(treatment == "B", N == "-N") %>% pull(mean_bu_ac), 2)
-  cover <- signif(d1 %>% filter(treatment == "C", N == "-N") %>% pull(mean_bu_ac), 2)
+  bare <- signif(data_summarized %>% filter(treatment == "B", N == "-N") %>% pull(mean_bu_ac), 2)
+  cover <- signif(data_summarized %>% filter(treatment == "C", N == "-N") %>% pull(mean_bu_ac), 2)
   
-  bareN <- signif(d1 %>% filter(treatment == "B", N == "+N") %>% pull(mean_bu_ac), 2)
-  coverN <- signif(d1 %>% filter(treatment == "C", N == "+N") %>% pull(mean_bu_ac), 2)
+  bareN <- signif(data_summarized %>% filter(treatment == "B", N == "+N") %>% pull(mean_bu_ac), 2)
+  coverN <- signif(data_summarized %>% filter(treatment == "C", N == "+N") %>% pull(mean_bu_ac), 2)
   
   pal <- scales::hue_pal(h.start = 30, l = 60)(3)[1:2]
   
@@ -22,9 +22,12 @@ yield_boxer <- function(input, output, session, inputcode, data) {
   outputOptions(output, "showYieldBox", suspendWhenHidden = FALSE)
   
   output$summary <- renderPlot({
-    if (nrow(d0) == 0) return(NULL)
+    if (nrow(data_at_inputcode) == 0) return(NULL)
     
-    ggplot(d1, aes(treatment, mean_bu_ac, fill = treatment, alpha = N)) + 
+    ggplot(
+      data_summarized, 
+      aes(treatment, mean_bu_ac, fill = treatment, alpha = N)
+      ) + 
       geom_col(show.legend = F, position = position_dodge(0.85)) +
       geom_linerange(
         aes(ymin = mean_bu_ac-sd_bu_ac, ymax = mean_bu_ac+sd_bu_ac, group = N), 
@@ -43,7 +46,7 @@ yield_boxer <- function(input, output, session, inputcode, data) {
   })
   
   output$yieldtext <- renderUI({
-    if (nrow(d0) == 0) return(NULL)
+    if (nrow(data_at_inputcode) == 0) return(NULL)
     
     if (length(coverN) & length(bareN)) {
       Nplus <- div(
