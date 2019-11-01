@@ -93,12 +93,11 @@ fluidPage(
       tags$h2(
         tags$img(
           src = "PSAlogo-text.png", 
-          style = "height: 2em;"
+          style = "height: 2em; padding-left: 2em; padding-right: 2em;"
           ),
         tags$a(
           href = "http://www.precisionsustainableag.org", 
-          "precisionsustainableag.org",
-          style = "padding: 2em;"
+          "precisionsustainableag.org"
           ),
         style = "text-align: center;"
       ),

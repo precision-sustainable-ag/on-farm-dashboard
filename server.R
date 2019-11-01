@@ -11,6 +11,8 @@ library(glue)
 library(purrr)
 library(leaflet)
 
+httr::set_config(httr::config(http_version = 0))
+
 library(dbplyr)
 library(RPostgres)
 con <- dbConnect(

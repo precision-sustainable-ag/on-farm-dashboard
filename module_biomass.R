@@ -43,14 +43,16 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
         div(
           "We collected fresh plant tissues of your cover crop:", 
           fresh_text,
-          tags$hr()
+          tags$hr(),
+          style = "list-style:inside;"
         )
       },
       if (length(fresh_missing)) {
         div(
           "Some measurements are not currently available:",
           fresh_missing,
-          tags$hr()
+          tags$hr(),
+          style = "list-style:inside;"
         )
       }
     )
