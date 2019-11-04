@@ -2,6 +2,13 @@ library(shiny)
 library(leaflet)
 
 
+map_attribution <- tags$small(
+  icon("copyright"), "ESRI,", 
+  icon("copyright"), "OpenStreetMap, Stamen", 
+  icon("creative-commons"), "BY3.0",
+  style = "float: right;"
+)
+
 
 fluidPage(
   theme = "bootstrap.css",
@@ -13,7 +20,7 @@ fluidPage(
       "h1{font-size:3rem !important;}",
       "h2{font-size:2.5rem !important;}",
       "body{font-size:160% !important;}",
-      ".btn{font-size:110% !important;}",
+      ".btn{font-size:120% !important; font-family: monospace, monospace;}",
       ".form-control{font-size:100% !important;}"
     ),
     tags$link(rel="apple-touch-icon", href="apple-touch-icon.png"),
@@ -45,18 +52,12 @@ fluidPage(
         uiOutput('fieldinfo'),
         uiOutput('missingerror'),
         uiOutput('ll_error'),
-        leafletOutput("map") %>% 
+        leafletOutput("map")  %>% 
           shinycssloaders::withSpinner(type = 6, color = "#158cba"),
-        tags$small(
-          icon("copyright"), "ESRI,", 
-          icon("copyright"), "OpenStreetMap, Stamen", 
-          icon("creative-commons"), "BY3.0",
-          style = "float: right;"
-        ),
-        tags$br(),
+        map_attribution,
         actionButton(
           "reset", 
-          tags$small(" Reset View"), 
+          tags$small("Reset View"), 
           icon = icon("refresh", class = "fa-xs"),
           class = "btn btn-success btn-sm"
         )
@@ -82,9 +83,8 @@ fluidPage(
           column(6, conditionalPanel("input.lastname", uiOutput("yieldbox"))),
           column(6, plotOutput('yield_plot'))
         )
-      ) 
+      )
     )
-    
   ),
   fluidRow(
     column(

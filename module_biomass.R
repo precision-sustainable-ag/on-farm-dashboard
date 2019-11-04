@@ -70,8 +70,10 @@ dry_pseudomodule <- function(biomass_df, field_codes, lastname) {
     ungroup() %>% 
     filter(code %in% field_codes) %>%
     group_by(year, code) %>%
-    summarise(mean_dry = signif(mean(dry_kg_ha, na.rm = T)*0.892179, 2),
-              mean_n = signif(mean(n_kg_ha, na.rm = T)*0.892179, 2)) %>% 
+    summarise(
+      mean_dry = signif(mean(dry_kg_ha, na.rm = T)*0.892179, 2),
+      mean_n = signif(mean(n_kg_ha, na.rm = T)*0.892179, 2)
+      ) %>% 
     ungroup() %>% 
     filter(!is.na(mean_dry)) %>% 
     group_by(year, code) %>% 
@@ -114,8 +116,10 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
     ) %>%
     filter(!is.na(dry_kg_ha), !is.na(state)) %>% 
     group_by(state, year, code, flag) %>%
-    summarise(mean_dry = mean(dry_kg_ha)*0.892179,
-              sd_dry = sd(dry_kg_ha)*0.892179) %>% 
+    summarise(
+      mean_dry = mean(dry_kg_ha)*0.892179,
+      sd_dry = sd(dry_kg_ha)*0.892179
+      ) %>% 
     ungroup() %>% 
     group_by(state) %>% 
     mutate(rnk = row_number(mean_dry))
@@ -144,11 +148,13 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
       size = 5
     ) +
     coord_flip() +
-    scale_x_continuous(expand = c(0,0.6)) +
+    scale_x_continuous(expand = expand_scale(add = 2)) +
     scale_y_continuous(
       limits = c(-100,NA),
       labels = scales::comma,
-      sec.axis = dup_axis(name = NULL)) +
+      sec.axis = dup_axis(name = NULL),
+      expand = expand_scale(mult = 0.05, add = 500)
+      ) +
     scale_color_manual(values = c("FALSE" = "black", "TRUE" = "red")) +
     labs(
       x = NULL, 

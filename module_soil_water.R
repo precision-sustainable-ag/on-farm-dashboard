@@ -84,9 +84,9 @@ water_boxer <- function(input, output, session, inputcode, data) {
     
     div(
       "In both these graphs", 
-      span(tags$strong("green"), style = glue::glue("color:{pal[2]}")),
+      span(tags$strong("green"), style = glue::glue("color:{pal[2]};")),
       "refers to the cover crop, and", 
-      span(tags$strong("orange-brown"), style = glue::glue("color:{pal[1]}")),
+      span(tags$strong("orange-brown"), style = glue::glue("color:{pal[1]};")),
       "refers to the bare ground.", 
       tags$strong("Field capacity"), 
       "is used here to mean the approximate amount of",

@@ -53,11 +53,11 @@ yield_boxer <- function(input, output, session, inputcode, data) {
         hr(),
         "With added N fertilizer:",
         tags$li(
-          span(tags$strong("Cover crop:"), style = glue::glue("color:{pal[2]}")),
+          span(tags$strong("Cover crop:"), style = glue::glue("color:{pal[2]};")),
           coverN, " bushels/acre"
         ),
         tags$li(
-          span(tags$strong("Bare ground:"), style = glue::glue("color:{pal[1]}")),
+          span(tags$strong("Bare ground:"), style = glue::glue("color:{pal[1]};")),
           bareN, " bushels/acre"
         )
       )
@@ -66,11 +66,11 @@ yield_boxer <- function(input, output, session, inputcode, data) {
     div(
       "Standard N fertilizer rate:",
       tags$li(
-        tags$span(tags$strong("Cover crop:"), style = glue::glue("color:{pal[2]}")),
+        tags$span(tags$strong("Cover crop:"), style = glue::glue("color:{pal[2]};")),
         cover, " bushels/acre"
       ),
       tags$li(
-        tags$span(tags$strong("Bare ground:"), style = glue::glue("color:{pal[1]}")),
+        tags$span(tags$strong("Bare ground:"), style = glue::glue("color:{pal[1]};")),
         bare, " bushels/acre"
       ),
       Nplus
@@ -152,10 +152,11 @@ yield_plotter <- function(yield_df, field_codes, lastname) {
       size = 5
     ) +
     coord_flip() +
-    scale_x_continuous(expand = c(0,0.6)) +
+    scale_x_continuous(expand = expand_scale(add = 2)) +
     scale_y_continuous(
       labels = scales::comma,
-      sec.axis = dup_axis(name = NULL)
+      sec.axis = dup_axis(name = NULL),
+      expand = expand_scale(mult = 0.05, add = 2)
     ) +
     scale_color_manual(values = c("FALSE" = "black", "TRUE" = "red")) +
     labs(

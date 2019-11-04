@@ -28,6 +28,8 @@ con <- dbConnect(
 
 function(input, output, session) {
   
+  # Data loading section ----
+  # _ site list ----
   start_sites <- full_join(
     tbl(con, "site_information") %>% 
       select(code, year, state, longitude, latitude, producer_id),
@@ -36,7 +38,7 @@ function(input, output, session) {
   ) %>% collect()
 
 
-  # biomass ----
+  # _ biomass ----
    
   in_field_biomass <-
     tbl(con, "in_field_biomass") %>% 
@@ -63,7 +65,7 @@ function(input, output, session) {
   biomass_sites <- 
     full_join(biomass, start_sites) 
   
-  # yield
+  # _ yield ----
   yield <- tbl(con, "yield") %>% 
     collect() %>% 
     full_join(start_sites) %>% 
@@ -77,15 +79,15 @@ function(input, output, session) {
     filter(!is.na(treatment))
   
 
-  # sensor summaries 
+  # _ sensor summaries ----
   soil_water <- 
     gs_key(soil_water_gs_key, lookup = F) %>% 
     gs_read(col_types = "cccTnn")
   
 
   
-
-# output$fieldinfo ----
+# User filtering section ----
+# _ output$fieldinfo ----
   output$fieldinfo <- renderUI({
     if (is.null(start_sites) | input$lastname == "") return(NULL)
     
@@ -98,18 +100,20 @@ function(input, output, session) {
           )
         ) %>% 
       pull(code) %>% 
-      unique()
+      unique() %>% 
+      sort()
       
     
     checkboxGroupButtons(
       "fieldinfo", "Field ID:",
       choices = choices,
       selected = choices,
-      individual = T, status = "outline-primary"
+      individual = T, 
+      status = "outline-primary"
     )
   })
   
-  # latlongs ----
+  # _ latlongs ----
 
   
   latlongs_grower <- reactive({
@@ -124,7 +128,7 @@ function(input, output, session) {
         ) 
   })
   
-  # output$ll_error ----
+  # _ output$ll_error ----
   output$ll_error <- renderUI({
     if (is.null(latlongs_grower())) {
       return(
@@ -144,15 +148,18 @@ function(input, output, session) {
     }
   })
   
-  # basemap ----
+  # Mapping section ----
+  # _ basemap ----
   basemap <- 
     leaflet(options = leafletOptions(attributionControl = F)) %>% 
       addProviderTiles(providers$Esri.WorldImagery) %>% 
-      addProviderTiles(providers$Stamen.TonerLabels, 
-                       options = tileOptions(opacity = 0.5)) %>% 
+      addProviderTiles(
+        providers$Stamen.TonerLabels, 
+        options = tileOptions(opacity = 0.5)
+        ) %>% 
       fitBounds(-74.17, 39.96, -84.9,  32.15)
   
-  # output$map ----
+  # _ output$map ----
   output$map <- renderLeaflet({
     trash <- input$reset
     
@@ -201,24 +208,24 @@ function(input, output, session) {
   })
   
   
+  # Tab content modules ----
   
-  
-  # output$fresh_text_summary ----
+  # _ output$fresh_text_summary ----
   output$fresh_text_summary <- renderUI(
     fresh_pseudomodule(biomass_sites, input$fieldinfo, input$lastname)
     )
   
-  # output$dry_text_summary ----
+  # _ output$dry_text_summary ----
   output$dry_text_summary <- renderUI(
     dry_pseudomodule(biomass_sites, input$fieldinfo, input$lastname)
   )
   
-  # output$dry_plot ----
+  # _ output$dry_plot ----
   output$dry_plot <- renderPlot(
     dry_plotter_module(biomass_sites, input$fieldinfo, input$lastname)
   )
   
-  # Walk over soil water module ----
+  # _ Walk over soil water module ----
   observeEvent(
     input$fieldinfo, 
     walk(
@@ -227,12 +234,12 @@ function(input, output, session) {
       )
     )
   
-  # output$waterbox ----
+  # _ output$waterbox ----
   output$waterbox <- renderUI(
     map(input$fieldinfo, water_boxerUI) %>% tagList()
   )
 
-  # Walk over yield module ----
+  # _ Walk over yield module ----
   observeEvent(
     input$fieldinfo, 
     walk(
@@ -241,13 +248,13 @@ function(input, output, session) {
       )
     )
   
-  # output$yieldbox ----
+  # _ output$yieldbox ----
   output$yieldbox <- renderUI(
     map(input$fieldinfo, yield_boxerUI) %>% tagList()
     )
 
   
-  # output$yield_plot ----
+  # _ output$yield_plot ----
   output$yield_plot <- renderPlot(
     yield_plotter(yield, input$fieldinfo, input$lastname)
   )
