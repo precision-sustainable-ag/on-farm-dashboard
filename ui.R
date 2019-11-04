@@ -9,6 +9,25 @@ map_attribution <- tags$small(
   style = "float: right;"
 )
 
+footer <- fluidRow(
+  column(
+    12,
+    hr(),
+    tags$h2(
+      tags$img(
+        src = "PSAlogo-text.png", 
+        style = "height: 2em; padding-left: 2em; padding-right: 2em;"
+      ),
+      tags$a(
+        href = "http://www.precisionsustainableag.org", 
+        "precisionsustainableag.org"
+      ),
+      style = "text-align: center;"
+    ),
+    hr()
+  )
+)
+
 
 fluidPage(
   theme = "bootstrap.css",
@@ -52,7 +71,7 @@ fluidPage(
         uiOutput('fieldinfo'),
         uiOutput('missingerror'),
         uiOutput('ll_error'),
-        leafletOutput("map")  %>% 
+        leafletOutput("map") %>% 
           shinycssloaders::withSpinner(type = 6, color = "#158cba"),
         map_attribution,
         actionButton(
@@ -86,23 +105,7 @@ fluidPage(
       )
     )
   ),
-  fluidRow(
-    column(
-      12,
-      hr(),
-      tags$h2(
-        tags$img(
-          src = "PSAlogo-text.png", 
-          style = "height: 2em; padding-left: 2em; padding-right: 2em;"
-          ),
-        tags$a(
-          href = "http://www.precisionsustainableag.org", 
-          "precisionsustainableag.org"
-          ),
-        style = "text-align: center;"
-      ),
-      hr()
-    )
-  )
+  
+  footer
   
 )
