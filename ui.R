@@ -39,7 +39,7 @@ fluidPage(
       "h1{font-size:3rem !important;}",
       "h2{font-size:2.5rem !important;}",
       "body{font-size:160% !important;}",
-      ".btn{font-size:120% !important; font-family: monospace, monospace;}",
+      ".btn{font-size:120% !important;}", # font-family: monospace, monospace;
       ".form-control{font-size:100% !important;}"
     ),
     tags$link(rel="apple-touch-icon", href="apple-touch-icon.png"),
