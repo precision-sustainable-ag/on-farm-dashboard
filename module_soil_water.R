@@ -29,7 +29,7 @@ water_boxer <- function(input, output, session, inputcode, data) {
     
     data_wide %>% 
       ggplot(aes(d, surplus)) + 
-      geom_col(aes(fill = factor(surplus>=0)), show.legend = F) +
+      geom_col(aes(fill = factor(surplus>=0)), show.legend = F, width = 60*60*24) +
       scale_y_continuous(
         "Saved water, inches", labels = abs, 
         limits = c(-1,1)*rng_max,
