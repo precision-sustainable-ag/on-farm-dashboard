@@ -40,7 +40,8 @@ fluidPage(
       "h2{font-size:2.5rem !important;}",
       "body{font-size:160% !important;}",
       ".btn{font-size:120% !important;}", # font-family: monospace, monospace;
-      ".form-control{font-size:100% !important;}"
+      ".form-control{font-size:100% !important;}",
+      ".row:before, .row:after{ display: inline-block !important}" # Safari fix
     ),
     tags$link(rel="apple-touch-icon", href="apple-touch-icon.png"),
     tags$link(rel="icon", type="image/png", sizes="32x32", href="favicon-32x32.png"),

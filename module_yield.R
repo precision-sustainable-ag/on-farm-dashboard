@@ -93,7 +93,7 @@ yield_boxerUI <- function(id) {
       div(
         fluidRow(
           column(6, plotOutput(ns("summary"), height = "22vh")),
-          column(6, htmlOutput(ns("yieldtext")))
+          column(6, htmlOutput(ns("yieldtext")), style = "list-style:inside;")
         ),
         class = "card-body"
       ),
