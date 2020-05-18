@@ -2,6 +2,7 @@
 
 fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
   if (lastname == "") return(NULL)
+  if (is.null(biomass_df)) return(NULL)
   
   if (length(field_codes) == 0) {
     div("Select one or more fields to get a summary of your cover crop data.")
@@ -64,6 +65,7 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
 
 dry_pseudomodule <- function(biomass_df, field_codes, lastname) {
   if (lastname == "") return(NULL)
+  if (is.null(biomass_df)) return(NULL)
   
   
   df <- biomass_df %>% 
@@ -107,6 +109,8 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
 
   # forces reset on input
   trash <- lastname
+  if (is.null(biomass_df)) return(NULL)
+  
   
   df <- biomass_df %>% 
     ungroup() %>% 
@@ -122,7 +126,8 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
       ) %>% 
     ungroup() %>% 
     group_by(state) %>% 
-    mutate(rnk = row_number(mean_dry))
+    mutate(rnk = row_number(mean_dry)) %>% 
+    ungroup()
   
   regions <- df %>% filter(flag) %>% pull(state) %>% unique()
   
@@ -134,9 +139,10 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
     geom_linerange(
       aes(ymin = mean_dry-sd_dry, ymax = mean_dry+sd_dry),
       show.legend = F, 
-      color = "grey65"
+      color = "grey65",
+      na.rm = T
     ) +
-    geom_point(show.legend = F, size = 3.5) +
+    geom_point(show.legend = F, size = 3.5, na.rm = T) +
     facet_grid(state ~ ., scales = "free_y", space = "free_y") +
     geom_text(
       data = function(d) filter(d, flag),
@@ -145,7 +151,8 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
       hjust = 0, 
       fontface = "bold",
       show.legend = F, 
-      size = 5
+      size = 5,
+      na.rm = T
     ) +
     coord_flip() +
     scale_x_continuous(expand = expand_scale(add = 2)) +

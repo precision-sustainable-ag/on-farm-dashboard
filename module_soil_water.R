@@ -1,6 +1,7 @@
 # generate box elements
 water_boxer <- function(input, output, session, inputcode, data) {
-
+  if (is.null(data)) return(NULL)
+  
   data_at_inputcode <- data %>% filter(code == inputcode) 
   pal <- scales::hue_pal(h.start = 30, l = 60)(3)[1:2]
   
@@ -29,7 +30,12 @@ water_boxer <- function(input, output, session, inputcode, data) {
     
     data_wide %>% 
       ggplot(aes(d, surplus)) + 
-      geom_col(aes(fill = factor(surplus>=0)), show.legend = F, width = 60*60*24) +
+      geom_col(
+        aes(fill = factor(surplus>=0)), 
+        show.legend = F, 
+        width = 60*60*24,
+        na.rm = T
+        ) +
       scale_y_continuous(
         "Saved water, inches", labels = abs, 
         limits = c(-1,1)*rng_max,
@@ -56,7 +62,7 @@ water_boxer <- function(input, output, session, inputcode, data) {
       group_by(code, trt) %>% 
       summarise(pctoffc = mean(inches, na.rm = T)/(3.5*3.28)) %>% 
       ggplot(aes(0, pctoffc, fill = trt)) + 
-      geom_col(position = position_dodge(width = 1), show.legend = F) +
+      geom_col(position = position_dodge(width = 1), show.legend = F, na.rm = T) +
       geom_hline(yintercept = 0:1, size = 1) +
       scale_y_continuous(
         "% of soil water field capacity",

@@ -1,5 +1,6 @@
 yield_boxer <- function(input, output, session, inputcode, data) {
-
+  if (is.null(data)) return(NULL)
+  
   data_at_inputcode <- data %>% 
     filter(code == inputcode, !is.na(bu_ac), !is.na(treatment)) 
   
@@ -28,12 +29,13 @@ yield_boxer <- function(input, output, session, inputcode, data) {
       data_summarized, 
       aes(treatment, mean_bu_ac, fill = treatment, alpha = N)
       ) + 
-      geom_col(show.legend = F, position = position_dodge(0.85)) +
+      geom_col(show.legend = F, position = position_dodge(0.85), na.rm = T) +
       geom_linerange(
         aes(ymin = mean_bu_ac-sd_bu_ac, ymax = mean_bu_ac+sd_bu_ac, group = N), 
         alpha = 1,
         position = position_dodge(0.85), 
-        show.legend = F
+        show.legend = F,
+        na.rm = T
       ) +
       labs(x = NULL, y = NULL) +
       scale_fill_manual(values = pal) +
@@ -138,9 +140,10 @@ yield_plotter <- function(yield_df, field_codes, lastname) {
     geom_linerange(
       aes(ymin = mean_cs-sd_cs, ymax = mean_cs+sd_cs),
       show.legend = F, 
-      color = "grey65"
+      color = "grey65",
+      na.rm = T
     ) +
-    geom_point(show.legend = F, size = 3.5) +
+    geom_point(show.legend = F, size = 3.5, na.rm = T) +
     facet_grid(state ~ ., scales = "free_y", space = "free_y") +
     geom_text(
       data = function(d) filter(d, flag),
@@ -149,7 +152,8 @@ yield_plotter <- function(yield_df, field_codes, lastname) {
       hjust = 0, 
       fontface = "bold",
       show.legend = F, 
-      size = 5
+      size = 5,
+      na.rm = T
     ) +
     coord_flip() +
     scale_x_continuous(expand = expand_scale(add = 2)) +
