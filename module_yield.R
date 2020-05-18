@@ -5,7 +5,7 @@ yield_boxer <- function(input, output, session, inputcode, data) {
     filter(code == inputcode, !is.na(bu_ac), !is.na(treatment)) 
   
   data_summarized <- data_at_inputcode %>% 
-    group_by(treatment, N) %>% 
+    group_by(year, treatment, N, prettyid) %>% 
     summarize(
       mean_bu_ac = mean(bu_ac),
       sd_bu_ac = sd(bu_ac)
@@ -44,7 +44,9 @@ yield_boxer <- function(input, output, session, inputcode, data) {
   })
   
   output$yieldhead <- renderUI({
-    tags$strong(inputcode)
+    if (nrow(data_at_inputcode) == 0) return("")
+    hd <- glue("Field {data_summarized$prettyid} ({data_summarized$year})")
+    tags$strong(hd[1])
   })
   
   output$yieldtext <- renderUI({
@@ -113,11 +115,11 @@ yield_plotter <- function(yield_df, field_codes, lastname) {
   
   df <- yield_df %>% 
     filter(N == "-N") %>% 
-    select(code, state, treatment, subplot, row, bu_ac) %>% 
+    select(code, prettyid, state, treatment, subplot, row, bu_ac) %>% 
     spread(treatment, bu_ac) %>% 
     mutate(cover_surplus = C-B) %>% 
     filter(!is.na(cover_surplus)) %>% 
-    group_by(code, state) %>% 
+    group_by(code, prettyid, state) %>% 
     summarise(
       mean_cs = mean(cover_surplus),
       sd_cs = sd(cover_surplus)/sqrt(length(cover_surplus))
@@ -147,7 +149,7 @@ yield_plotter <- function(yield_df, field_codes, lastname) {
     facet_grid(state ~ ., scales = "free_y", space = "free_y") +
     geom_text(
       data = function(d) filter(d, flag),
-      aes(x = rnk, y = mean_cs+sd_cs, label = code),
+      aes(x = rnk, y = mean_cs+sd_cs, label = prettyid),
       nudge_y = 5, 
       hjust = 0, 
       fontface = "bold",
