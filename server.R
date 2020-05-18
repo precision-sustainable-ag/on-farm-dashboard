@@ -34,7 +34,8 @@ make_con <- function(host = pg_host) {
 
 function(input, output, session) {
   # Resolve IP of DB once to speed up connections
-  host_ip <- iptools::hostname_to_ip(pg_host)[[1]]
+  # first element in case it returns both ipv4 and ipv6
+  host_ip <- iptools::hostname_to_ip(pg_host)[[1]][1]
   
   # Data loading section ----
   # _ site list ----
@@ -172,6 +173,18 @@ function(input, output, session) {
 
   
 # User filtering section ----
+
+# _ lastname URL query handler
+  observe({
+    q <- getQueryString() %>% purrr::map(utils::URLdecode)
+    updateTextInput(session, "lastname", value = q[["lastname"]] %||% "")
+  })
+  
+  observeEvent(input$lastname, {
+    qs <- paste0("?lastname=", utils::URLencode(input$lastname))
+    updateQueryString(qs, mode = "replace")
+  })
+  
 # _ output$fieldinfo ----
   output$fieldinfo <- renderUI({
     req(start_sites())
@@ -187,9 +200,18 @@ function(input, output, session) {
         ) %>% 
       select(code, prettyid)
       
+    lab <- paste0(
+      "Field ID:", 
+      tags$small(
+        "    click any to hide", 
+        class = 'text-muted',
+        style = 'white-space: pre;'
+      )
+    )
     
     checkboxGroupButtons(
-      "fieldinfo", "Field ID:",
+      "fieldinfo", 
+      HTML(lab),
       selected = choices$code,
       individual = T, 
       status = "outline-primary",

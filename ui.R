@@ -65,8 +65,8 @@ fluidPage(
       4,
       wellPanel(
         textInput(
-          'lastname', 
-          label = NULL, 
+          'lastname',
+          label = NULL,
           placeholder = "Enter your last name"
         ),
         uiOutput('fieldinfo'),
