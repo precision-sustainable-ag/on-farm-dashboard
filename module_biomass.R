@@ -65,10 +65,8 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
         }
       )
     
-    
-    
     div(
-      if (length(fresh_text)) {
+      if (any(map_dbl(fresh_text, length))) {
         div(
           "We collected fresh plant tissues of your cover crop:", 
           fresh_text,
@@ -76,7 +74,7 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
           style = "list-style:inside;"
         )
       },
-      if (length(fresh_missing)) {
+      if (any(map_dbl(fresh_missing, length))) {
         div(
           "Some measurements are not currently available:",
           fresh_missing,
