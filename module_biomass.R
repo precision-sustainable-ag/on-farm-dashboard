@@ -51,9 +51,10 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
       map(
         ~{
           dat <- .x
-          rps <- map(
+          
+          rps <- glue_collapse(
             filter(dat, is.na(mean_fresh)) %>% pull(missing) %>% unique(),
-            ~tags$li(HTML(.x))
+            sep = "; "
           )
           
           if (!length(rps)) {
