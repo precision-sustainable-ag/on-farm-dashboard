@@ -190,7 +190,6 @@ function(input, output, session) {
     
     checkboxGroupButtons(
       "fieldinfo", "Field ID:",
-      #choices = choices,
       selected = choices$code,
       individual = T, 
       status = "outline-primary",

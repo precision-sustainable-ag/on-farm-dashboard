@@ -10,31 +10,58 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
     df <- biomass_df %>% 
       ungroup() %>% 
       filter(code %in% field_codes)  %>%
-      group_by(year, code, subplot) %>%
-      summarise(mean_fresh = signif(mean(fresh_wt, na.rm = T)*10/4882.428, 2)) %>% 
-      arrange(year, code, subplot) %>% 
-      group_by(year, code, subplot) %>% 
+      group_by(year, code, prettyid, subplot) %>%
+      summarise(
+        mean_fresh = signif(mean(fresh_wt, na.rm = T)*10/4882.428, 2),
+        ) %>% 
+      arrange(year, prettyid, mean_fresh) %>% 
+      group_by(year, prettyid) %>% 
       mutate(
         report = as.character(glue(
-          "{year}, {code}({subplot}): {tags$b(mean_fresh)} lbs/10ft{tags$sup(2)}"
+          "#{prettyid}: {tags$b(glue_collapse(mean_fresh, sep = ', ', last = ' and '))} lbs/10ft{tags$sup(2)}"
         )),
         missing = as.character(glue(
-          "{year}, {code}"
+          "#{prettyid}"
         ))
       )
     
     
     
     fresh_text <- 
+      split(df, df$year) %>% 
       map(
-        df %>% filter(!is.na(mean_fresh)) %>% pull(report), 
-        ~tags$li(HTML(.x))
+        ~{
+          dat <- .x
+          rps <- map(
+            filter(dat, !is.na(mean_fresh)) %>% pull(report) %>% unique(),
+            ~tags$li(HTML(.x))
+            )
+          
+          if (!length(rps)) {
+            return(NULL)
+          }
+          
+          list(tags$h3(dat$year[1]), rps)
+        }
       )
+
     
     fresh_missing <- 
+      split(df, df$year) %>% 
       map(
-        df %>% filter(is.na(mean_fresh)) %>% pull(missing) %>% unique(), 
-        ~tags$li(HTML(.x))
+        ~{
+          dat <- .x
+          rps <- map(
+            filter(dat, is.na(mean_fresh)) %>% pull(missing) %>% unique(),
+            ~tags$li(HTML(.x))
+          )
+          
+          if (!length(rps)) {
+            return(NULL)
+          }
+          
+          list(tags$h3(dat$year[1]), rps)
+        }
       )
     
     
@@ -71,17 +98,17 @@ dry_pseudomodule <- function(biomass_df, field_codes, lastname) {
   df <- biomass_df %>% 
     ungroup() %>% 
     filter(code %in% field_codes) %>%
-    group_by(year, code) %>%
+    group_by(year, code, prettyid) %>%
     summarise(
       mean_dry = signif(mean(dry_kg_ha, na.rm = T)*0.892179, 2),
       mean_n = signif(mean(n_kg_ha, na.rm = T)*0.892179, 2)
       ) %>% 
     ungroup() %>% 
     filter(!is.na(mean_dry)) %>% 
-    group_by(year, code) %>% 
+    group_by(year, code, prettyid) %>% 
     mutate(
       report_dry = as.character(glue(
-        "In field {code} ({year}), your cover crop had about ",
+        "In field #{prettyid}, your cover crop had about ",
         "{tags$b(mean_dry)} lbs/acre of dry matter"
       )),
       report_n = as.character(glue(
@@ -91,7 +118,22 @@ dry_pseudomodule <- function(biomass_df, field_codes, lastname) {
       report = paste0(report_dry, report_n)
     )
   
-  summaries <- map(df %>% pull(report), ~tags$p(HTML(.x))) 
+  summaries <- 
+    split(df, df$year) %>% 
+    map(
+      ~{
+        dat <- .x
+        rps <- map(dat %>% pull(report), ~tags$p(HTML(.x))) 
+        
+        if (!length(rps)) return(NULL)
+        
+        div(
+          div(tags$strong(dat$year[1]), class = "card-header"),
+          div(rps, class = "card-body"),
+          class = "card border-primary mb-3"
+        )
+      }
+    )
 
   div(
     h2(tags$strong("Dry matter summary")), 
@@ -119,7 +161,7 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
       flag = replace(flag, trash == "", F)
     ) %>%
     filter(!is.na(dry_kg_ha), !is.na(state)) %>% 
-    group_by(state, year, code, flag) %>%
+    group_by(state, year, code, flag, prettyid) %>%
     summarise(
       mean_dry = mean(dry_kg_ha)*0.892179,
       sd_dry = sd(dry_kg_ha)*0.892179
@@ -146,7 +188,7 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
     facet_grid(state ~ ., scales = "free_y", space = "free_y") +
     geom_text(
       data = function(d) filter(d, flag),
-      aes(x = rnk, y = mean_dry+sd_dry, label = code),
+      aes(x = rnk, y = mean_dry+sd_dry, label = prettyid),
       nudge_y = 200, 
       hjust = 0, 
       fontface = "bold",

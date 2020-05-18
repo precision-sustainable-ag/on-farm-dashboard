@@ -92,7 +92,7 @@ fluidPage(
         tabPanel(
           "Cover biomass", tags$br(),  
           column(6, plotOutput('dry_plot')),
-          column(4, uiOutput("dry_text_summary"))
+          column(5, uiOutput("dry_text_summary"))
         ),
         tabPanel(
           "Soil water", tags$br(),
