@@ -45,7 +45,7 @@ function(input, output, session) {
     
     full_join(
       tbl(con, "site_information") %>% 
-        select(code, year, state, longitude, latitude, producer_id),
+        select(code, year, state = affiliation, longitude, latitude, producer_id),
       tbl(con, "producer_ids") %>% 
         select(producer_id, last_name),
       by = "producer_id"
