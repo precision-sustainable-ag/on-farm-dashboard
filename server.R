@@ -38,7 +38,7 @@ function(input, output, session) {
       by = "producer_id"
     ) %>% collect() %>% 
       group_by(last_name) %>% 
-      arrange(year) %>% 
+      arrange(desc(year)) %>% 
       mutate(prettyid = sprintf("%02d", row_number())) %>% 
       ungroup()
   })
@@ -151,14 +151,18 @@ function(input, output, session) {
 
   # _ sensor summaries ----
   # TODO update to use DB instead
-  soil_water_promise <- future({
-    gs_key(soil_water_gs_key, lookup = F) %>%
-      gs_read(col_types = "cccTnn")
-  })
-  soil_water <- reactiveVal()
-  soil_water_promise %...>% soil_water()
+  # soil_water_promise <- future({
+  #   gs_key(soil_water_gs_key, lookup = F) %>%
+  #     gs_read(col_types = "cccTnn")
+  # })
+  # soil_water <- reactiveVal()
+  # soil_water_promise %...>% soil_water()
 
-  
+  soil_water <- reactive(
+    water_summary_extractor_SQL(input$fieldinfo) %>% 
+      left_join(start_sites())
+  )
+
 # User filtering section ----
 
 # _ lastname URL query handler

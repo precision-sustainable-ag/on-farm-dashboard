@@ -96,7 +96,11 @@ fluidPage(
         ),
         tabPanel(
           "Soil water", tags$br(),
-          conditionalPanel("input.lastname", uiOutput("waterbox"))
+          conditionalPanel(
+            "input.lastname", 
+            uiOutput("waterbox") %>% 
+              shinycssloaders::withSpinner(type = 6, color = "#158cba")
+            ) 
         ),
         tabPanel(
           "Corn yield", tags$br(),

@@ -1,8 +1,106 @@
+# get soil water summary for selected sites
+water_summary_extractor_SQL <- function(fields = "") {
+  
+  if (!length(fields) || any(nchar(fields) == 0)) { return(NULL) }
+  
+  con <- make_con()
+  on.exit(dbDisconnect(con))
+  
+  fieldlist <- stringr::str_c("\'", fields, "\'", collapse = ",")
+  
+  install_queries <- purrr::map(
+    c("bare_node_serial_no", "cover_node_serial_no"),
+    ~glue::glue(
+      '
+    SELECT 
+      "code", "subplot", "serial",
+      \'{substr(.x, 1, 1)}\' AS "trt",
+      "time_begin", 
+      COALESCE("time_end", "possible_time_end", "end_of_year") AS "time_end"
+    FROM (
+      SELECT 
+        "code", "subplot", "serial", 
+        "time_begin", "time_end", "possible_time_end", 
+        CAST(CONCAT(EXTRACT(year FROM "time_begin"), \'-11-01 12:00:00\') AS TIMESTAMP) AS "end_of_year"
+      FROM (
+        SELECT 
+          "code", "subplot", "serial", 
+          "time_begin", "time_end", 
+          LEAD("time_begin", 1, NULL) OVER (PARTITION BY "serial" ORDER BY "code", "time_begin") AS "possible_time_end"
+        FROM (
+          SELECT 
+            "code", "subplot", 
+            "{.x}" AS "serial", 
+            "time_begin", "time_end"
+          FROM "wsensor_install" 
+            WHERE ("code" IN ({fieldlist}))
+            ORDER BY "code", "time_begin"
+        ) AS filtered_subquery 
+      ) AS filled_subquery
+    ) AS guessed_subquery
+    '
+    )
+  )
+  
+  
+  purrr::map(
+    install_queries,
+    ~tbl(con, sql(.x))
+  ) %>% 
+    {union_all(.[[1]], .[[2]])} %>% 
+    compute("temp_installs")
+  
+  
+  
+  subsets <- tbl(con, sql(
+    '
+      SELECT * FROM water_sensor_data
+      LEFT JOIN temp_installs
+      ON (
+        "timestamp" > time_begin 
+        AND "timestamp" < time_end 
+        AND node_serial_no = serial
+      )
+      '
+  )
+  )
+  
+  
+  subsets %>% 
+    filter(!is.na(code)) %>% 
+    mutate(d = as.Date(timestamp)) %>% 
+    filter(between(vwc, 0, 100)) %>% 
+    group_by(code, trt, d) %>% 
+    summarise(
+      vwc = mean(vwc, na.rm = T)
+    ) %>% 
+    mutate(
+      inches = vwc / 2.54
+    ) %>% 
+    arrange(d) %>% 
+    ungroup() %>% 
+    mutate(d = as_datetime(d)) %>% 
+    collect()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 # generate box elements
 water_boxer <- function(input, output, session, inputcode, data) {
   if (is.null(data)) return(NULL)
   
   data_at_inputcode <- data %>% filter(code == inputcode) 
+  prettyid_at_inputcode <- na.omit(data_at_inputcode$prettyid[1])
   pal <- scales::hue_pal(h.start = 30, l = 60)(3)[1:2]
   
   output$showWaterBox <- reactive(nrow(data_at_inputcode))
@@ -55,11 +153,11 @@ water_boxer <- function(input, output, session, inputcode, data) {
       return(NULL)
     } 
     
-    data_at_inputcode %>% group_by(code, trt) %>% 
+    data_at_inputcode %>% group_by(code, trt, prettyid) %>% 
       mutate(count_days_backwards = row_number(-as.numeric(d))) %>% 
       ungroup() %>% 
       #filter(count_days_backwards < 7) %>% 
-      group_by(code, trt) %>% 
+      group_by(code, trt, prettyid) %>% 
       summarise(pctoffc = mean(inches, na.rm = T)/(3.5*3.28)) %>% 
       ggplot(aes(0, pctoffc, fill = trt)) + 
       geom_col(position = position_dodge(width = 1), show.legend = F, na.rm = T) +
@@ -82,7 +180,7 @@ water_boxer <- function(input, output, session, inputcode, data) {
   })
   
   output$waterhead <- renderUI({
-    tags$strong(inputcode)
+    tags$strong(prettyid_at_inputcode)
   })
   
   output$watertext <- renderUI({
@@ -120,7 +218,9 @@ water_boxerUI <- function(id) {
         fluidRow(
           column(
             5, textOutput(ns("errfieldcap")), 
-            plotOutput(ns("fieldcap"), height = "20vh"),  tags$br(),
+            plotOutput(ns("fieldcap"), height = "20vh") %>% 
+              shinycssloaders::withSpinner(type = 6, color = "#158cba"),  
+            tags$br(),
             htmlOutput(ns("watertext"))
           ),
           column(
@@ -129,7 +229,7 @@ water_boxerUI <- function(id) {
           )
         ),
         class = "card-body"
-      ),
+      ) ,
       class = "card border-primary mb-3"
     ), 
     ns = ns
