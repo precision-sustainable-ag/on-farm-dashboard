@@ -17,19 +17,6 @@ plan(multisession)
 httr::set_config(httr::config(http_version = 0))
 
 library(dbplyr)
-library(RPostgres)
-make_con <- function(host = pg_host) {
-  dbConnect(
-    Postgres(),
-    dbname = pg_dbname,
-    host = host,
-    port = pg_port,
-    user = pg_user,
-    password = pg_password,
-    sslmode = "require",
-    application_name = "on_farm_dashboard_v2020.05"
-  )
-}
 
 
 function(input, output, session) {
