@@ -29,6 +29,7 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
     
     fresh_text <- 
       split(df, df$year) %>% 
+      rev() %>% 
       map(
         ~{
           dat <- .x
@@ -48,6 +49,7 @@ fresh_pseudomodule <- function(biomass_df, field_codes, lastname) {
     
     fresh_missing <- 
       split(df, df$year) %>% 
+      rev() %>% 
       map(
         ~{
           dat <- .x
@@ -119,6 +121,7 @@ dry_pseudomodule <- function(biomass_df, field_codes, lastname) {
   
   summaries <- 
     split(df, df$year) %>% 
+    rev() %>% 
     map(
       ~{
         dat <- .x
