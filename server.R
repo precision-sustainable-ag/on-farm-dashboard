@@ -264,7 +264,7 @@ function(input, output, session) {
         providers$Stamen.TonerLabels, 
         options = tileOptions(opacity = 0.5)
         ) %>% 
-      fitBounds(-74.17, 39.96, -84.9,  32.15)
+      fitBounds(-104.57, 24.75, -66.52, 49.6)
   
   # _ output$map ----
   output$map <- renderLeaflet({
