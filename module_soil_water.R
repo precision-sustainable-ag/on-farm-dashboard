@@ -180,7 +180,7 @@ water_boxer <- function(input, output, session, inputcode, data) {
   })
   
   output$waterhead <- renderUI({
-    tags$strong(prettyid_at_inputcode)
+    tags$strong(glue::glue("{prettyid_at_inputcode} ({data_at_inputcode$year[1]})"))
   })
   
   output$watertext <- renderUI({
