@@ -32,6 +32,7 @@ function(input, output, session) {
     
     full_join(
       tbl(con, "site_information") %>% 
+        filter(protocols_enrolled != "-999" | is.na(protocols_enrolled)) %>% 
         select(code, year, state = affiliation, longitude, latitude, producer_id),
       tbl(con, "producer_ids") %>% 
         select(producer_id, last_name),
@@ -271,7 +272,9 @@ function(input, output, session) {
     trash <- input$reset
     req(latlongs_grower())
     
-    df <- latlongs_grower() %>% filter(!is.na(latitude))
+    df <- latlongs_grower() %>% 
+      filter(!is.na(latitude)) %>% 
+      filter(latitude >= 0)
     
     if (nrow(df) > 0 & input$lastname != "") {
       basemap %>% clearBounds() %>% 
