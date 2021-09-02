@@ -39,7 +39,7 @@ function(input, output, session) {
     ) %>% collect() %>% 
       group_by(last_name) %>% 
       arrange(desc(year)) %>% 
-      mutate(prettyid = sprintf("%02d", row_number())) %>% 
+      mutate(prettyid = code) %>% 
       ungroup()
   })
   start_sites <- reactiveVal()
