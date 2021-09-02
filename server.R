@@ -36,7 +36,11 @@ function(input, output, session) {
       tbl(con, "producer_ids") %>% 
         select(producer_id, last_name),
       by = "producer_id"
-    ) %>% collect() %>% 
+    ) %>% 
+      filter(
+        !(last_name %~% "test|Poncet|Test|Lorem|Rohit")
+        ) %>% 
+      collect() %>% 
       filter(!is.na(code)) %>% 
       group_by(last_name) %>% 
       arrange(desc(year)) %>% 
