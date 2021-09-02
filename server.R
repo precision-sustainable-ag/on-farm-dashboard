@@ -37,6 +37,7 @@ function(input, output, session) {
         select(producer_id, last_name),
       by = "producer_id"
     ) %>% collect() %>% 
+      filter(!is.na(code)) %>% 
       group_by(last_name) %>% 
       arrange(desc(year)) %>% 
       mutate(prettyid = code) %>% 
@@ -158,10 +159,11 @@ function(input, output, session) {
   # soil_water <- reactiveVal()
   # soil_water_promise %...>% soil_water()
 
-  soil_water <- reactive(
+  soil_water <- reactive({
+    # browser()
     water_summary_extractor_SQL(input$fieldinfo) %>% 
       left_join(start_sites())
-  )
+  })
 
 # User filtering section ----
 
