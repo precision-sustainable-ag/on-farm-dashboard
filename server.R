@@ -54,6 +54,10 @@ function(input, output, session) {
           state %in% c("DE", "MD", "VA") ~ "Mid-Atlantic",
           state %in% c("IN", "KS", "NE") ~ "Midwest",
           T ~ ""
+        ),
+        state = forcats::fct_relevel(
+          state, "Northeast", "Mid-Atlantic", 
+          "Midwest", "Southeast", ""
         )
       )
   })
