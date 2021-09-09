@@ -167,17 +167,27 @@ dry_plotter_module <- function(biomass_df, field_codes, lastname) {
     summarise(
       mean_dry = mean(dry_kg_ha)*0.892179,
       sd_dry = sd(dry_kg_ha)*0.892179
-      ) %>% 
-    ungroup() %>% 
-    group_by(state) %>% 
-    mutate(rnk = row_number(mean_dry)) %>% 
-    ungroup()
+      ) 
   
   regions <- df %>% filter(flag) %>% pull(state) %>% unique()
   
   if (length(regions) > 0) {
     df <- df %>% filter(state %in% regions)
   }
+
+  df <- df %>% 
+    ungroup() %>% 
+    group_by(state) %>% 
+    add_count() %>% 
+    ungroup() %>% 
+    mutate(
+      p = n/nrow(.),
+      state = replace(state, p < 0.1, "")
+      ) %>% 
+    group_by(state) %>% 
+    mutate(rnk = row_number(mean_dry)) %>% 
+    ungroup()
+    
   
   ggplot(df, aes(rnk, mean_dry, color = flag)) +
     geom_linerange(

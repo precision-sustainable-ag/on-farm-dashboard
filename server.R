@@ -46,7 +46,16 @@ function(input, output, session) {
       group_by(last_name) %>% 
       arrange(desc(year)) %>% 
       mutate(prettyid = code) %>% 
-      ungroup()
+      ungroup() %>% 
+      mutate(
+        state = case_when(
+          state %in% c("PA", "VT") ~ "Northeast",
+          state %in% c("AL", "FL", "GA", "NC") ~ "Southeast",
+          state %in% c("DE", "MD", "VA") ~ "Mid-Atlantic",
+          state %in% c("IN", "KS", "NE") ~ "Midwest",
+          T ~ ""
+        )
+      )
   })
   start_sites <- reactiveVal()
   start_sites_promise %...>% start_sites()

@@ -127,15 +127,26 @@ yield_plotter <- function(yield_df, field_codes, lastname) {
     ungroup() %>% 
     mutate(flag = code %in% field_codes,
            flag = replace(flag, trash == "", F)) %>%
-    filter(!is.na(state)) %>% 
-    group_by(state) %>% 
-    mutate(rnk = row_number(mean_cs))
+    filter(!is.na(state))
   
   regions <- df %>% filter(flag) %>% pull(state) %>% unique()
   
   if (length(regions) > 0) {
     df <- df %>% filter(state %in% regions)
   }
+  
+  df <- df %>% 
+    ungroup() %>% 
+    group_by(state) %>% 
+    add_count() %>% 
+    ungroup() %>% 
+    mutate(
+      p = n/nrow(.),
+      state = replace(state, p < 0.1, "")
+    ) %>% 
+    group_by(state) %>% 
+    mutate(rnk = row_number(mean_cs)) %>% 
+    ungroup()
   
   ggplot(df, aes(rnk, mean_cs, color = flag)) +
     geom_hline(yintercept = 0, size = 1, color = "grey50") +
