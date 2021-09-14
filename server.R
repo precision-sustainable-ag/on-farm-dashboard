@@ -71,12 +71,14 @@ function(input, output, session) {
     on.exit(dbDisconnect(con))
     
     tbl(con, "biomass_in_field") %>% 
-      select(code, subplot, fresh_wt_a, fresh_wt_b, legumes_40) %>% 
+      mutate(bag = coalesce(bag_wt, mean(bag_wt_a, bag_wt_b))) %>% 
+      select(code, subplot, fresh_wt_a, fresh_wt_b, bag, legumes_40) %>% 
       # TODO drop legumes_40 because of splitted tables?
       collect() %>% 
       mutate_all(~na_if(., -999)) %>% 
       gather(key = subsample, value = fresh_wt, fresh_wt_a:fresh_wt_b) %>% 
-      mutate(subsample = str_to_upper(str_sub(subsample, start = -1, end = -1))) 
+      mutate(subsample = str_to_upper(str_sub(subsample, start = -1, end = -1))) %>% 
+      mutate(fresh_wt = fresh_wt - bag)
   })
 
   
@@ -90,9 +92,8 @@ function(input, output, session) {
         select(code, subplot, subsample, dry_biomass_wt),
       tbl(con, "decomp_biomass_fresh") %>%  
         filter(time == 0) %>% 
-        select(code, subplot, subsample, fresh_biomass_wt),
+        select(code, subplot, subsample, fresh_biomass_wt, empty_bag_wt),
       by = c("code", "subplot", "subsample")
-      # TODO subtract out empty_bag_wt? from both fresh and dry?
     ) %>% 
       full_join(
         tbl(con, "decomp_biomass_cn") %>% 
@@ -100,11 +101,16 @@ function(input, output, session) {
           select(code, subplot, subsample, percent_n),
         by = c("code", "subplot", "subsample")
       ) %>% 
+      filter(!is.na(fresh_biomass_wt), !is.na(dry_biomass_wt)) %>% 
+      collect() %>% 
+      mutate_all(~na_if(., -999)) %>% 
+      mutate(
+        fresh_biomass_wt = fresh_biomass_wt - empty_bag_wt, 
+        dry_biomass_wt = dry_biomass_wt - empty_bag_wt
+      ) %>% 
       mutate(dry_to_fresh_ratio = dry_biomass_wt/fresh_biomass_wt) %>% 
       filter(dry_to_fresh_ratio <= 1, dry_to_fresh_ratio > 0) %>% 
-      select(code, subplot, subsample, dry_to_fresh_ratio, percent_n) %>% 
-      collect() %>% 
-      mutate_all(~na_if(., -999))
+      select(code, subplot, subsample, dry_to_fresh_ratio, percent_n)
   })
 
 
